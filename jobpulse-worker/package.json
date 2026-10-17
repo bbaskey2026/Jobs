@@ -1,0 +1,30 @@
+{
+  "name": "jobpulse-worker",
+  "version": "1.0.0",
+  "description": "Background worker application for JobPulse using BullMQ and Redis",
+  "main": "dist/worker.js",
+  "scripts": {
+    "dev": "tsx watch src/worker.ts",
+    "build": "tsc",
+    "start": "node dist/worker.js",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@jobpulse/shared": "file:../jobpulse-shared",
+    "@prisma/client": "^5.14.0",
+    "bullmq": "^5.7.1",
+    "dotenv": "^16.4.5",
+    "ioredis": "^5.4.1",
+    "pino": "^9.1.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "pino-pretty": "^11.1.0",
+    "prisma": "^5.14.0",
+    "tsx": "^4.10.5",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

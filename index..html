@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medium Typography Replica (Inter Font)</title>
+
+    <!-- Import the Inter Font from Google Fonts CDN -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Reset and Core Page Background styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #121212;
+            /* Deep dark background matching the image */
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Card Wrapper Layout */
+        .medium-card {
+            max-width: 680px;
+            width: 100%;
+            background-color: #121212;
+            padding: 10px 0;
+        }
+
+        /* Bold Headline styled exactly like the original image */
+        .medium-title {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.15;
+            color: rgba(255, 255, 255, 0.95);
+            letter-spacing: -0.028em;
+            /* Gives Inter the exact tight look of Söhne */
+            margin-bottom: 12px;
+        }
+
+        /* Muted Preview Description */
+        .medium-description {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.75);
+            letter-spacing: -0.011em;
+            margin-bottom: 20px;
+        }
+
+        /* Profile / Metadata Footer Section */
+        .medium-meta {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: -0.005em;
+        }
+
+        .meta-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #555;
+            /* Fallback mockup color */
+            margin-right: 8px;
+            display: inline-block;
+            overflow: hidden;
+        }
+
+        .meta-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .meta-author {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .meta-divider {
+            margin: 0 6px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- The Replica Layout Markup Component -->
+    <article class="medium-card">
+
+        <h1 class="medium-title">
+            Three small (but meaningful) quality of life improvements to the Medium experience
+        </h1>
+
+        <p class="medium-description">
+            Set your image focal point, organize publications alphabetically, and hide highlights on all stories.
+        </p>
+
+        <div class="medium-meta">
+            <div class="meta-avatar">
+                <!-- Mock profile image fallback -->
+                <img src="https://unsplash.com" alt="Avatar">
+            </div>
+            <span class="meta-author">Zulie @ Medium</span>
+            <span class="meta-divider">·</span>
+            <span class="meta-date">Added Jun 24</span>
+            <span class="meta-divider">·</span>
+            <span class="meta-read-time">4 min read</span>
+        </div>
+
+    </article>
+
+</body>
+
+</html>

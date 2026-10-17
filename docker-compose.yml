@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jobpulse-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: jobpulse
+      POSTGRES_PASSWORD: jobpulse_secure_password_2026
+      POSTGRES_DB: jobpulse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobpulse -d jobpulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: jobpulse-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: jobpulse-backend/Dockerfile
+    container_name: jobpulse-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      API_PREFIX: /api/v1
+      DATABASE_URL: "postgresql://jobpulse:jobpulse_secure_password_2026@postgres:5432/jobpulse?schema=public"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: jobpulse_production_jwt_secret_min_32_characters_key!
+      REFRESH_TOKEN_SECRET: jobpulse_production_refresh_token_secret_min_32_chars!
+      CORS_ORIGIN: "http://localhost,http://localhost:5173"
+      STORAGE_DRIVER: local
+      STORAGE_LOCAL_DIR: /app/uploads/resumes
+      EMAIL_DRIVER: console
+      NOAUTH_ENABLED: "false"
+    ports:
+      - "5000:5000"
+    volumes:
+      - resume_uploads:/app/uploads/resumes
+
+  worker:
+    build:
+      context: .
+      dockerfile: jobpulse-worker/Dockerfile
+    container_name: jobpulse-worker
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://jobpulse:jobpulse_secure_password_2026@postgres:5432/jobpulse?schema=public"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CONCURRENCY: 5
+
+  frontend:
+    build:
+      context: .
+      dockerfile: jobpulse-frontend/Dockerfile
+    container_name: jobpulse-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  resume_uploads:
