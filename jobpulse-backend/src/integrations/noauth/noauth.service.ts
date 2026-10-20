@@ -34,6 +34,15 @@ export class NoAuthService implements JobSourceProvider {
   async fetchJobs(options?: { cursor?: string; limit?: number; since?: Date }): Promise<ProviderSyncResult> {
     logger.info({ options }, 'Fetching jobs from NoAuth provider');
 
+    if (!noAuthConfig.isEnabled) {
+      logger.warn('NoAuth provider is disabled in configuration. Skipping remote fetch.');
+      return {
+        recordsFetched: 0,
+        recordsNormalized: [],
+        hasMore: false
+      };
+    }
+
     const rawResponse = await noAuthClient.getJobs(options);
     const rawList = rawResponse.data || [];
 

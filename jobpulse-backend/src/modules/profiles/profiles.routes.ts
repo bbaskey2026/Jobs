@@ -58,31 +58,40 @@ router.put('/', async (req: Request, res: Response, next: NextFunction) => {
       });
     }
 
+    const formatStringField = (val: any) => {
+      if (Array.isArray(val)) return val.join(',');
+      if (typeof val === 'string') return val;
+      return undefined;
+    };
+
+    const updateData: any = {};
+    if (phoneNumber !== undefined) updateData.phoneNumber = phoneNumber;
+    if (state !== undefined) updateData.state = state;
+    if (city !== undefined) updateData.city = city;
+    if (currentEducation !== undefined) updateData.currentEducation = currentEducation;
+    if (experienceYears !== undefined) updateData.experienceYears = Number(experienceYears);
+    if (preferredSectors !== undefined) updateData.preferredSectors = formatStringField(preferredSectors) ?? '';
+    if (preferredLocations !== undefined) updateData.preferredLocations = formatStringField(preferredLocations) ?? '';
+    if (skills !== undefined) updateData.skills = formatStringField(skills) ?? '';
+    if (bio !== undefined) updateData.bio = bio;
+
+    const createData: any = {
+      userId,
+      phoneNumber: phoneNumber || null,
+      state: state || null,
+      city: city || null,
+      currentEducation: currentEducation || null,
+      experienceYears: experienceYears !== undefined ? Number(experienceYears) : 0,
+      preferredSectors: formatStringField(preferredSectors) ?? '',
+      preferredLocations: formatStringField(preferredLocations) ?? '',
+      skills: formatStringField(skills) ?? '',
+      bio: bio || null
+    };
+
     const updated = await prisma.userProfile.upsert({
       where: { userId },
-      update: {
-        phoneNumber,
-        state,
-        city,
-        currentEducation,
-        experienceYears,
-        preferredSectors: preferredSectors || [],
-        preferredLocations: preferredLocations || [],
-        skills: skills || [],
-        bio
-      },
-      create: {
-        userId,
-        phoneNumber,
-        state,
-        city,
-        currentEducation,
-        experienceYears,
-        preferredSectors: preferredSectors || [],
-        preferredLocations: preferredLocations || [],
-        skills: skills || [],
-        bio
-      },
+      update: updateData,
+      create: createData,
       include: {
         educationRecords: true,
         experienceRecords: true

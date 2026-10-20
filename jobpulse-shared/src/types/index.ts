@@ -111,6 +111,7 @@ export interface JobDto {
     sector: JobSector;
     verificationStatus: VerificationStatus;
     logoUrl?: string | null;
+    websiteUrl?: string | null;
   };
   department?: string | null;
   sector: JobSector;

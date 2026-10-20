@@ -85,4 +85,69 @@ router.get('/:slug', async (req: Request, res: Response, next: NextFunction) => 
   }
 });
 
+// POST /api/v1/organizations - Create new organization or company dynamically
+router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const {
+      name,
+      slug,
+      sector,
+      category,
+      description,
+      websiteUrl,
+      officialNotificationDomain,
+      logoUrl,
+      headquartersState,
+      verificationStatus
+    } = req.body;
+
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      throw AppError.badRequest('Organization / Company name is required');
+    }
+
+    // Auto-generate clean slug if not provided
+    const baseSlug = (slug || name)
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    let finalSlug = baseSlug || 'organization';
+    let counter = 1;
+    while (await prisma.organization.findUnique({ where: { slug: finalSlug } })) {
+      finalSlug = `${baseSlug}-${counter++}`;
+    }
+
+    // Auto-extract domain from websiteUrl if not supplied
+    let derivedDomain = officialNotificationDomain;
+    if (!derivedDomain && websiteUrl) {
+      try {
+        const parsed = new URL(websiteUrl.startsWith('http') ? websiteUrl : `https://${websiteUrl}`);
+        derivedDomain = parsed.hostname.replace(/^www\./, '');
+      } catch {
+        derivedDomain = undefined;
+      }
+    }
+
+    const org = await prisma.organization.create({
+      data: {
+        name: name.trim(),
+        slug: finalSlug,
+        sector: sector || JobSector.CENTRAL_GOVERNMENT,
+        category: category || null,
+        description: description || null,
+        websiteUrl: websiteUrl || null,
+        officialNotificationDomain: derivedDomain || null,
+        logoUrl: logoUrl || null,
+        headquartersState: headquartersState || 'All India',
+        verificationStatus: verificationStatus || VerificationStatus.VERIFIED
+      }
+    });
+
+    return sendSuccess(res, org, 201);
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

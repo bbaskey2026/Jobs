@@ -44,7 +44,7 @@ export const NotificationsPage: React.FC = () => {
     <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 }, px: { xs: 2, sm: 3 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3.5 }}>
         <Box>
-          <Typography variant="h3" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 800, color: '#000000', mb: 0.5, fontSize: { xs: '1.5rem', md: '1.875rem' } }}>
+          <Typography variant="h3" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, color: '#000000', mb: 0.5, fontSize: { xs: '1.5rem', md: '1.875rem' } }}>
             Notification Center
           </Typography>
           <Typography variant="body2" sx={{ color: '#6B6B6B' }}>

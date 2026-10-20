@@ -17,6 +17,11 @@ export const jobsApi = {
     return response.data;
   },
 
+  async getStateStats(): Promise<any[]> {
+    const response = await apiClient.get<ApiResponse<any[]>>('/jobs/state-stats');
+    return response.data.data;
+  },
+
   async getJobDetail(slugOrId: string): Promise<JobDetailDto> {
     const response = await apiClient.get<ApiResponse<JobDetailDto>>(`/jobs/${slugOrId}`);
     return response.data.data;

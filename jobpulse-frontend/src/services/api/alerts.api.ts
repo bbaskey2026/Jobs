@@ -58,12 +58,38 @@ export const applicationsApi = {
 
 export const organizationsApi = {
   async getOrganizations(): Promise<OrganizationDto[]> {
-    const res = await apiClient.get<{ data: OrganizationDto[] }>('/organizations');
+    const res = await apiClient.get<{ data: OrganizationDto[] }>('/organizations?limit=100');
     return res.data.data;
   },
 
   async getOrganizationDetail(slug: string): Promise<OrganizationDto & { jobs: any[] }> {
     const res = await apiClient.get<ApiResponse<OrganizationDto & { jobs: any[] }>>(`/organizations/${slug}`);
+    return res.data.data;
+  },
+
+  async createOrganization(data: {
+    name: string;
+    sector: string;
+    category?: string;
+    description?: string;
+    websiteUrl?: string;
+    officialNotificationDomain?: string;
+    headquartersState?: string;
+    logoUrl?: string;
+  }): Promise<OrganizationDto> {
+    const res = await apiClient.post<ApiResponse<OrganizationDto>>('/organizations', data);
+    return res.data.data;
+  }
+};
+
+export const categoriesApi = {
+  async getCategories(): Promise<any[]> {
+    const res = await apiClient.get<ApiResponse<any[]>>('/categories');
+    return res.data.data;
+  },
+
+  async createCategory(data: { name: string; description?: string; iconName?: string }): Promise<any> {
+    const res = await apiClient.post<ApiResponse<any>>('/categories', data);
     return res.data.data;
   }
 };
@@ -81,6 +107,11 @@ export const adminApi = {
 
   async updateJobStatus(id: string, status: string): Promise<void> {
     await apiClient.patch(`/admin/jobs/${id}/status`, { status });
+  },
+
+  async createJob(data: any): Promise<any> {
+    const res = await apiClient.post<ApiResponse<any>>('/admin/jobs', data);
+    return res.data.data;
   },
 
   async triggerSourceSync(code: string): Promise<any> {

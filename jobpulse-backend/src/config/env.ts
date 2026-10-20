@@ -3,6 +3,14 @@ import { z } from 'zod';
 
 dotenv.config();
 
+const booleanFromString = z.preprocess((val) => {
+  if (typeof val === 'string') {
+    if (val.toLowerCase() === 'true' || val === '1') return true;
+    if (val.toLowerCase() === 'false' || val === '0') return false;
+  }
+  return Boolean(val);
+}, z.boolean());
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(5000),
@@ -16,7 +24,7 @@ const envSchema = z.object({
   REFRESH_TOKEN_SECRET: z.string().min(16, 'REFRESH_TOKEN_SECRET must be at least 16 chars'),
   REFRESH_TOKEN_EXPIRES_IN: z.string().default('7d'),
   COOKIE_SECRET: z.string().default('jobpulse_cookie_secret_key_min_32_chars!'),
-  COOKIE_SECURE: z.coerce.boolean().default(false),
+  COOKIE_SECURE: booleanFromString.default(false),
   COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('lax'),
   CORS_ORIGIN: z.string().default('http://localhost:5173,http://localhost:3000'),
   STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
@@ -32,7 +40,7 @@ const envSchema = z.object({
   NOAUTH_API_BASE_URL: z.string().url().default('https://api.noauth.example.com/v1'),
   NOAUTH_API_KEY: z.string().optional().default(''),
   NOAUTH_API_TIMEOUT_MS: z.coerce.number().default(10000),
-  NOAUTH_ENABLED: z.coerce.boolean().default(false),
+  NOAUTH_ENABLED: booleanFromString.default(false),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info')
 });
 

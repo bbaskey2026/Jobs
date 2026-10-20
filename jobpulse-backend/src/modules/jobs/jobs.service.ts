@@ -25,6 +25,7 @@ export class JobsService {
     organizationSlug?: string;
     organizationId?: string;
     state?: string;
+    stateOnly?: boolean | string;
     city?: string;
     employmentType?: EmploymentType;
     qualification?: string;
@@ -42,17 +43,21 @@ export class JobsService {
 
     const where: Prisma.JobWhereInput = {};
     const now = new Date();
+    const andConditions: Prisma.JobWhereInput[] = [];
 
-    // 1. Status and Deadline Enforcement
+    // 1. Status and Deadline Enforcement (Strictly Genuine Real Data Only, No Demo Data)
+    where.isDemoData = false;
     if (params.status) {
       where.status = params.status;
     } else {
       // By default, only show PUBLISHED jobs whose application deadline has not expired
       where.status = JobStatus.PUBLISHED;
-      where.OR = [
-        { applicationDeadline: null },
-        { applicationDeadline: { gte: now } }
-      ];
+      andConditions.push({
+        OR: [
+          { applicationDeadline: null },
+          { applicationDeadline: { gte: now } }
+        ]
+      });
     }
 
     // 2. Upcoming Only
@@ -111,11 +116,17 @@ export class JobsService {
 
     // 7. Location (State / City)
     if (params.state && params.state !== 'All India') {
-      where.OR = [
-        ...(where.OR || []),
-        { state: { equals: params.state } },
-        { isAllIndia: true }
-      ];
+      const isStateOnly = typeof params.stateOnly === 'string' ? params.stateOnly === 'true' : Boolean(params.stateOnly);
+      if (isStateOnly) {
+        where.state = params.state;
+      } else {
+        andConditions.push({
+          OR: [
+            { state: { equals: params.state } },
+            { isAllIndia: true }
+          ]
+        });
+      }
     }
 
     if (params.city) {
@@ -146,20 +157,49 @@ export class JobsService {
       where.officialNotificationUrl = { not: null };
     }
 
-    // 11. Keyword Search
+    // 11. Intelligent Multi-Word Keyword Search
     if (params.q && params.q.trim()) {
-      const term = params.q.trim();
-      where.AND = [
-        {
+      const rawTerm = params.q.trim();
+      const tokens = rawTerm.split(/[\s+,]+/).map((t) => t.trim()).filter((t) => t.length > 0);
+
+      if (tokens.length <= 1) {
+        andConditions.push({
           OR: [
-            { title: { contains: term } },
-            { summary: { contains: term } },
-            { department: { contains: term } },
-            { qualificationSummary: { contains: term } },
-            { organization: { name: { contains: term } } }
+            { title: { contains: rawTerm } },
+            { summary: { contains: rawTerm } },
+            { fullDescription: { contains: rawTerm } },
+            { department: { contains: rawTerm } },
+            { qualificationSummary: { contains: rawTerm } },
+            { state: { contains: rawTerm } },
+            { city: { contains: rawTerm } },
+            { slug: { contains: rawTerm } },
+            { organization: { name: { contains: rawTerm } } },
+            { organization: { slug: { contains: rawTerm } } }
           ]
-        }
-      ];
+        });
+      } else {
+        // Multi-word search: Each word token must match across title, summary, department, org, or state
+        tokens.forEach((token) => {
+          andConditions.push({
+            OR: [
+              { title: { contains: token } },
+              { summary: { contains: token } },
+              { fullDescription: { contains: token } },
+              { department: { contains: token } },
+              { qualificationSummary: { contains: token } },
+              { state: { contains: token } },
+              { city: { contains: token } },
+              { slug: { contains: token } },
+              { organization: { name: { contains: token } } },
+              { organization: { slug: { contains: token } } }
+            ]
+          });
+        });
+      }
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     // Sorting
@@ -309,7 +349,8 @@ export class JobsService {
         slug: record.organization.slug,
         sector: record.organization.sector as JobSector,
         verificationStatus: record.organization.verificationStatus as VerificationStatus,
-        logoUrl: record.organization.logoUrl
+        logoUrl: record.organization.logoUrl,
+        websiteUrl: record.organization.websiteUrl
       },
       department: record.department,
       sector: record.sector as JobSector,
@@ -372,6 +413,108 @@ export class JobsService {
     });
 
     return { message: 'Thank you for reporting this issue. Our moderation team will review it.', reportId: report.id };
+  }
+
+  async getStateStats() {
+    const now = new Date();
+    const publishedJobs = await prisma.job.findMany({
+      where: {
+        status: JobStatus.PUBLISHED,
+        OR: [
+          { applicationDeadline: null },
+          { applicationDeadline: { gte: now } }
+        ]
+      },
+      select: {
+        id: true,
+        title: true,
+        sector: true,
+        state: true,
+        isAllIndia: true,
+        vacanciesCount: true
+      }
+    });
+
+    const statsByState: Record<string, {
+      state: string;
+      totalJobs: number;
+      totalVacancies: number;
+      postTypes: {
+        pscAndGovt: number;
+        policeAndSecurity: number;
+        teachingAndEdu: number;
+        engineeringAndPsu: number;
+        bankingAndFinance: number;
+        healthcare: number;
+        privateSector: number;
+        other: number;
+      };
+    }> = {};
+
+    for (const job of publishedJobs) {
+      const stateKey = job.state || 'All India';
+      if (!statsByState[stateKey]) {
+        statsByState[stateKey] = {
+          state: stateKey,
+          totalJobs: 0,
+          totalVacancies: 0,
+          postTypes: {
+            pscAndGovt: 0,
+            policeAndSecurity: 0,
+            teachingAndEdu: 0,
+            engineeringAndPsu: 0,
+            bankingAndFinance: 0,
+            healthcare: 0,
+            privateSector: 0,
+            other: 0
+          }
+        };
+      }
+
+      const entry = statsByState[stateKey];
+      entry.totalJobs += 1;
+      entry.totalVacancies += job.vacanciesCount || 1;
+
+      if (
+        job.sector === JobSector.UPSC_STATE_PSC ||
+        job.sector === JobSector.CENTRAL_GOVERNMENT ||
+        job.sector === JobSector.STATE_GOVERNMENT ||
+        job.sector === JobSector.SSC
+      ) {
+        entry.postTypes.pscAndGovt += 1;
+      } else if (
+        job.sector === JobSector.POLICE_SECURITY ||
+        job.sector === JobSector.DEFENCE_PARAMILITARY
+      ) {
+        entry.postTypes.policeAndSecurity += 1;
+      } else if (job.sector === JobSector.TEACHING_EDUCATION) {
+        entry.postTypes.teachingAndEdu += 1;
+      } else if (
+        job.sector === JobSector.PSU ||
+        job.sector === JobSector.PRIVATE_ENGINEERING
+      ) {
+        entry.postTypes.engineeringAndPsu += 1;
+      } else if (
+        job.sector === JobSector.BANKING_INSURANCE ||
+        job.sector === JobSector.PRIVATE_FINANCE
+      ) {
+        entry.postTypes.bankingAndFinance += 1;
+      } else if (
+        job.sector === JobSector.HEALTHCARE_PUBLIC ||
+        job.sector === JobSector.PRIVATE_HEALTHCARE
+      ) {
+        entry.postTypes.healthcare += 1;
+      } else if (
+        job.sector === JobSector.PRIVATE_IT ||
+        job.sector === JobSector.PRIVATE_OTHER
+      ) {
+        entry.postTypes.privateSector += 1;
+      } else {
+        entry.postTypes.other += 1;
+      }
+    }
+
+    return Object.values(statsByState).sort((a, b) => b.totalJobs - a.totalJobs);
   }
 }
 

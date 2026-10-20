@@ -9,6 +9,7 @@ const router = Router();
 router.get('/', optionalAuthenticate, validate(jobFilterSchema), jobsController.list);
 router.get('/government', optionalAuthenticate, validate(jobFilterSchema), jobsController.listGovernment);
 router.get('/private', optionalAuthenticate, validate(jobFilterSchema), jobsController.listPrivate);
+router.get('/state-stats', jobsController.getStateStats);
 router.get('/:slugOrId', optionalAuthenticate, jobsController.getDetail);
 router.post('/report', authenticate, validate(reportJobSchema), jobsController.report);
 

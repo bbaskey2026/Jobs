@@ -10,23 +10,37 @@ export const Footer: React.FC = () => {
         <Grid container spacing={4}>
           {/* Brand Info */}
           <Grid item xs={12} md={4}>
-            <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 1.5 }}>
+            <Box sx={{ mb: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'baseline' }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    color: '#0f2a4a',
+                    fontSize: '1.25rem',
+                    lineHeight: 1
+                  }}
+                >
+                  JobPulse
+                </Typography>
+                <Box component="span" sx={{ width: 5, height: 5, bgcolor: '#0d3b66', borderRadius: '50%', ml: 0.5 }} />
+              </Box>
               <Typography
-                variant="h6"
                 sx={{
-                  fontFamily: '"Manrope", sans-serif',
-                  fontWeight: 800,
-                  color: '#000000',
-                  letterSpacing: '-0.04em',
-                  fontSize: '1.25rem',
-                  lineHeight: 1
+                  fontFamily: "'Noto Sans Devanagari', sans-serif",
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  color: '#555555',
+                  mt: 0.5
                 }}
               >
-                JobPulse
+                रोजगार सूचना पोर्टल
               </Typography>
-              <Box component="span" sx={{ width: 5, height: 5, bgcolor: '#2563EB', borderRadius: '50%', ml: 0.5 }} />
             </Box>
-            <Typography variant="body2" sx={{ color: '#6B6B6B', mb: 2, lineHeight: 1.6, maxWidth: 380 }}>
+            <Typography variant="body2" sx={{ color: '#222222', mb: 2, lineHeight: 1.6, maxWidth: 380, fontSize: '15px' }}>
               India's premier editorial job discovery network aggregating verified central & state government, banking, defence, railway, and private sector employment notifications.
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center">

@@ -186,6 +186,10 @@ router.post('/jobs', async (req: Request, res: Response, next: NextFunction) => 
         applicationDeadline: data.applicationDeadline ? new Date(data.applicationDeadline) : undefined,
         officialNotificationUrl: data.officialNotificationUrl,
         applicationUrl: data.applicationUrl,
+        eligibilityCriteria: data.eligibilityCriteria,
+        selectionProcess: data.selectionProcess,
+        applicationFee: data.applicationFee,
+        howToApply: data.howToApply,
         status: data.status || JobStatus.PUBLISHED,
         sourceProvider: 'MANUAL_ADMIN',
         isDemoData: Boolean(data.isDemoData)

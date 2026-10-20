@@ -13,7 +13,21 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
       where: { userId },
       orderBy: { createdAt: 'desc' }
     });
-    return sendSuccess(res, searches);
+
+    const data = searches.map((s) => {
+      let parsedParams = {};
+      try {
+        parsedParams = typeof s.searchParams === 'string' ? JSON.parse(s.searchParams) : (s.searchParams || {});
+      } catch {
+        parsedParams = {};
+      }
+      return {
+        ...s,
+        searchParams: parsedParams
+      };
+    });
+
+    return sendSuccess(res, data);
   } catch (error) {
     next(error);
   }
@@ -24,16 +38,27 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user!.id;
     const { name, searchParams, hasAlert } = req.body;
 
+    const searchParamsString = typeof searchParams === 'string'
+      ? searchParams
+      : JSON.stringify(searchParams || {});
+
     const saved = await prisma.savedSearch.create({
       data: {
         userId,
         name: name || 'Custom Job Search',
-        searchParams: searchParams || {},
+        searchParams: searchParamsString,
         hasAlert: Boolean(hasAlert)
       }
     });
 
-    return sendSuccess(res, saved, 'Search saved successfully', 201);
+    let parsedParams = {};
+    try {
+      parsedParams = JSON.parse(saved.searchParams);
+    } catch {
+      parsedParams = {};
+    }
+
+    return sendSuccess(res, { ...saved, searchParams: parsedParams }, 'Search saved successfully', 201);
   } catch (error) {
     next(error);
   }

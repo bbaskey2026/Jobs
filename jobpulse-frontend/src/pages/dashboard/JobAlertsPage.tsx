@@ -81,7 +81,7 @@ export const JobAlertsPage: React.FC = () => {
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 }, px: { xs: 2, sm: 3, md: 4 } }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' }, gap: 2, mb: 4 }}>
         <Box>
-          <Typography variant="h3" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 800, color: '#000000', mb: 0.5, fontSize: { xs: '1.6rem', md: '2rem' } }}>
+          <Typography variant="h3" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, color: '#000000', mb: 0.5, fontSize: { xs: '1.6rem', md: '2rem' } }}>
             Job Alert Subscriptions
           </Typography>
           <Typography variant="body1" sx={{ color: '#6B6B6B' }}>

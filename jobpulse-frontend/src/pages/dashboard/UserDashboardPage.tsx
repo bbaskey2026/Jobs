@@ -69,7 +69,7 @@ export const UserDashboardPage: React.FC = () => {
           <Typography variant="overline" sx={{ color: '#2563EB', fontWeight: 700, letterSpacing: 1.2 }}>
             CANDIDATE DASHBOARD
           </Typography>
-          <Typography variant="h3" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 800, color: '#000000', mt: 0.5, mb: 0.5, fontSize: { xs: '1.6rem', md: '2rem' } }}>
+          <Typography variant="h3" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, color: '#000000', mt: 0.5, mb: 0.5, fontSize: { xs: '1.6rem', md: '2rem' } }}>
             Namaste, {user?.fullName}!
           </Typography>
           <Typography variant="body2" sx={{ color: '#6B6B6B', display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -131,7 +131,7 @@ export const UserDashboardPage: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Box sx={{ p: 3, borderRadius: 2, border: '1px solid #E6E6E6', bgcolor: '#FFFFFF', height: '100%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
-              <Typography variant="h6" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 700, color: '#000000', fontSize: '1.1rem' }}>
+              <Typography variant="h6" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, color: '#000000', fontSize: '1.1rem' }}>
                 Your Job Alerts
               </Typography>
               <Button component={RouterLink} to="/dashboard/alerts" size="small" sx={{ color: '#2563EB', fontWeight: 600, fontSize: '0.8125rem' }}>
@@ -162,7 +162,7 @@ export const UserDashboardPage: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Box sx={{ p: 3, borderRadius: 2, border: '1px solid #E6E6E6', bgcolor: '#FFFFFF', height: '100%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
-              <Typography variant="h6" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 700, color: '#000000', fontSize: '1.1rem' }}>
+              <Typography variant="h6" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, color: '#000000', fontSize: '1.1rem' }}>
                 Recent Outbound Applications
               </Typography>
               <Button component={RouterLink} to="/dashboard/applications" size="small" sx={{ color: '#2563EB', fontWeight: 600, fontSize: '0.8125rem' }}>

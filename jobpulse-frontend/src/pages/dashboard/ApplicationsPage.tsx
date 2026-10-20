@@ -31,7 +31,7 @@ export const ApplicationsPage: React.FC = () => {
   return (
     <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 }, px: { xs: 2, sm: 3, md: 4 } }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 800, color: '#000000', mb: 0.5, fontSize: { xs: '1.6rem', md: '2rem' } }}>
+        <Typography variant="h3" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, color: '#000000', mb: 0.5, fontSize: { xs: '1.6rem', md: '2rem' } }}>
           Outbound Application Tracker
         </Typography>
         <Typography variant="body1" sx={{ color: '#6B6B6B' }}>

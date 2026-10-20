@@ -41,6 +41,15 @@ export class JobsController {
     }
   }
 
+  async getStateStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const stats = await jobsService.getStateStats();
+      return sendSuccess(res, stats);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getDetail(req: Request, res: Response, next: NextFunction) {
     try {
       const slugOrId = req.params.slugOrId;

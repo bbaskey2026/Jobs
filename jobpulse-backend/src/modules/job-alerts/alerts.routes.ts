@@ -54,6 +54,10 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       throw AppError.badRequest('Alert title is required');
     }
 
+    const channelsString = Array.isArray(channels)
+      ? channels.join(',')
+      : (typeof channels === 'string' && channels ? channels : 'EMAIL,IN_APP');
+
     const alert = await prisma.jobAlert.create({
       data: {
         userId,
@@ -64,12 +68,17 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         state,
         qualification,
         frequency: frequency || AlertFrequency.DAILY_DIGEST,
-        channels: channels && channels.length > 0 ? channels : ['EMAIL', 'IN_APP'],
+        channels: channelsString,
         isActive: true
       }
     });
 
-    return sendSuccess(res, alert, 'Job alert configured successfully', 201);
+    const responseData = {
+      ...alert,
+      channels: alert.channels ? alert.channels.split(',') : ['EMAIL', 'IN_APP']
+    };
+
+    return sendSuccess(res, responseData, 'Job alert configured successfully', 201);
   } catch (error) {
     next(error);
   }
@@ -84,14 +93,30 @@ router.patch('/:id', async (req: Request, res: Response, next: NextFunction) => 
     const alert = await prisma.jobAlert.findFirst({ where: { id, userId } });
     if (!alert) throw AppError.notFound('Job alert not found');
 
+    const patchData: any = {};
+    if (req.body.title !== undefined) patchData.title = req.body.title;
+    if (req.body.keywords !== undefined) patchData.keywords = req.body.keywords;
+    if (req.body.sector !== undefined) patchData.sector = req.body.sector;
+    if (req.body.categorySlug !== undefined) patchData.categorySlug = req.body.categorySlug;
+    if (req.body.state !== undefined) patchData.state = req.body.state;
+    if (req.body.qualification !== undefined) patchData.qualification = req.body.qualification;
+    if (req.body.frequency !== undefined) patchData.frequency = req.body.frequency;
+    if (req.body.isActive !== undefined) patchData.isActive = Boolean(req.body.isActive);
+    if (req.body.channels !== undefined) {
+      patchData.channels = Array.isArray(req.body.channels) ? req.body.channels.join(',') : req.body.channels;
+    }
+
     const updated = await prisma.jobAlert.update({
       where: { id },
-      data: {
-        ...req.body
-      }
+      data: patchData
     });
 
-    return sendSuccess(res, updated, 'Job alert updated');
+    const responseData = {
+      ...updated,
+      channels: updated.channels ? updated.channels.split(',') : ['EMAIL', 'IN_APP']
+    };
+
+    return sendSuccess(res, responseData, 'Job alert updated');
   } catch (error) {
     next(error);
   }

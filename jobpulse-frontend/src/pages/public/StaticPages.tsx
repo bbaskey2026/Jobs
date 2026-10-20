@@ -5,7 +5,7 @@ import { Verified as VerifiedIcon, Security as SecurityIcon } from '@mui/icons-m
 
 export const AboutPage: React.FC = () => (
   <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-    <Typography variant="h2" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 800, color: '#000000', mb: 2, letterSpacing: '-0.03em', fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
+    <Typography variant="h2" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, color: '#000000', mb: 2, letterSpacing: '-0.03em', fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
       About JobPulse Editorial
     </Typography>
     <Typography variant="body1" sx={{ color: '#242424', mb: 4, fontSize: '1.05rem', lineHeight: 1.8 }}>
@@ -28,7 +28,7 @@ export const AboutPage: React.FC = () => (
 
 export const ContactPage: React.FC = () => (
   <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-    <Typography variant="h2" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 800, color: '#000000', mb: 1, letterSpacing: '-0.03em', fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
+    <Typography variant="h2" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, color: '#000000', mb: 1, letterSpacing: '-0.03em', fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
       Contact & Verification Desk
     </Typography>
     <Typography variant="body1" sx={{ color: '#6B6B6B', mb: 4 }}>
@@ -71,7 +71,7 @@ export const ContactPage: React.FC = () => (
 
 export const PrivacyPolicyPage: React.FC = () => (
   <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-    <Typography variant="h2" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 800, color: '#000000', mb: 1, letterSpacing: '-0.03em', fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
+    <Typography variant="h2" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, color: '#000000', mb: 1, letterSpacing: '-0.03em', fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
       Privacy Policy
     </Typography>
     <Typography variant="caption" sx={{ color: '#6B6B6B', display: 'block', mb: 3 }}>
@@ -91,7 +91,7 @@ export const PrivacyPolicyPage: React.FC = () => (
 
 export const TermsPage: React.FC = () => (
   <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-    <Typography variant="h2" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 800, color: '#000000', mb: 1, letterSpacing: '-0.03em', fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
+    <Typography variant="h2" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, color: '#000000', mb: 1, letterSpacing: '-0.03em', fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
       Terms of Service
     </Typography>
     <Typography variant="caption" sx={{ color: '#6B6B6B', display: 'block', mb: 3 }}>
@@ -105,7 +105,7 @@ export const TermsPage: React.FC = () => (
 
 export const DataDeletionPage: React.FC = () => (
   <Container maxWidth="md" sx={{ py: { xs: 4, md: 6 } }}>
-    <Typography variant="h2" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 800, color: '#000000', mb: 2, letterSpacing: '-0.03em', fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
+    <Typography variant="h2" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, color: '#000000', mb: 2, letterSpacing: '-0.03em', fontSize: { xs: '1.75rem', md: '2.25rem' } }}>
       Data Deletion & Candidate Privacy
     </Typography>
     <Box sx={{ p: 3.5, borderRadius: 2, border: '1px solid #E6E6E6', bgcolor: '#FFFFFF', mt: 3 }}>
@@ -132,7 +132,7 @@ export const DataDeletionPage: React.FC = () => (
 
 export const NotFoundPage: React.FC = () => (
   <Container maxWidth="sm" sx={{ py: 12, textAlign: 'center' }}>
-    <Typography variant="h1" sx={{ fontFamily: '"Manrope", sans-serif', fontWeight: 800, color: '#2563EB', fontSize: '4.5rem', mb: 1 }}>
+    <Typography variant="h1" sx={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, color: '#2563EB', fontSize: '4.5rem', mb: 1 }}>
       404
     </Typography>
     <Typography variant="h4" sx={{ fontWeight: 700, color: '#000000', mb: 1.5 }}>

@@ -4,8 +4,12 @@ export const components: Components<Theme> = {
   MuiCssBaseline: {
     styleOverrides: {
       body: {
+        fontFamily: "'Open Sans', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif",
+        fontSize: '15px',
+        lineHeight: 1.6,
+        fontWeight: 400,
         backgroundColor: '#FFFFFF',
-        color: '#242424',
+        color: '#222222',
         WebkitFontSmoothing: 'antialiased',
         MozOsxFontSmoothing: 'grayscale'
       }
@@ -24,35 +28,57 @@ export const components: Components<Theme> = {
     },
     styleOverrides: {
       root: {
-        borderRadius: 20,
-        padding: '7px 18px',
-        fontWeight: 600,
-        textTransform: 'none',
-        letterSpacing: '0.01em',
+        fontFamily: "'Open Sans', sans-serif",
         transition: 'all 0.15s ease-in-out'
       },
       containedPrimary: {
-        backgroundColor: '#2563EB',
+        backgroundColor: '#0d3b66',
         color: '#FFFFFF',
+        borderRadius: '4px',
+        fontWeight: 600,
+        textTransform: 'none',
         '&:hover': {
-          backgroundColor: '#1D4ED8'
+          backgroundColor: '#0f2a4a'
+        }
+      },
+      outlined: {
+        fontFamily: "'Open Sans', sans-serif",
+        fontSize: '12px',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        border: '1px solid #0d3b66',
+        borderRadius: '4px',
+        color: '#0d3b66',
+        padding: '5px 14px',
+        '&:hover': {
+          border: '1px solid #0d3b66',
+          backgroundColor: 'rgba(13, 59, 102, 0.06)',
+          color: '#0d3b66'
         }
       },
       outlinedPrimary: {
-        borderColor: '#E6E6E6',
-        color: '#242424',
-        borderRadius: 20,
+        fontFamily: "'Open Sans', sans-serif",
+        fontSize: '12px',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
+        borderColor: '#0d3b66',
+        borderWidth: 1,
+        borderRadius: '4px',
+        color: '#0d3b66',
+        padding: '5px 14px',
         '&:hover': {
-          borderColor: '#2563EB',
-          backgroundColor: '#EFF6FF',
-          color: '#2563EB'
+          borderColor: '#0d3b66',
+          backgroundColor: 'rgba(13, 59, 102, 0.06)',
+          color: '#0d3b66'
         }
       },
       text: {
-        borderRadius: 20,
+        fontFamily: "'Open Sans', sans-serif",
         color: '#6B6B6B',
         '&:hover': {
-          color: '#242424',
+          color: '#222222',
           backgroundColor: '#F7F7F7'
         }
       }

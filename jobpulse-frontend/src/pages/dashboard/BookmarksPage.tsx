@@ -24,7 +24,7 @@ export const BookmarksPage: React.FC = () => {
         <Typography
           variant="h3"
           sx={{
-            fontFamily: '"Manrope", sans-serif',
+            fontFamily: "'Roboto', sans-serif",
             fontWeight: 800,
             color: '#000000',
             letterSpacing: '-0.03em',

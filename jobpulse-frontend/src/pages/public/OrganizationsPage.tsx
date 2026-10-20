@@ -25,17 +25,26 @@ export const OrganizationsPage: React.FC = () => {
         <Typography
           variant="h2"
           sx={{
-            fontFamily: '"Manrope", sans-serif',
-            fontWeight: 800,
-            color: '#000000',
-            letterSpacing: '-0.035em',
+            fontFamily: "'Roboto', sans-serif",
+            fontWeight: 700,
+            color: '#1a1a1a',
+            letterSpacing: '-0.02em',
             fontSize: { xs: '1.75rem', md: '2.25rem' },
             mb: 0.75
           }}
         >
           Recruitment Authorities & Agencies
         </Typography>
-        <Typography variant="body1" sx={{ color: '#6B6B6B', maxWidth: 800 }}>
+        <Typography
+          variant="body1"
+          sx={{
+            fontFamily: "'Open Sans', 'Roboto', sans-serif",
+            color: '#222222',
+            fontSize: '15px',
+            lineHeight: 1.6,
+            maxWidth: 800
+          }}
+        >
           Explore India's constitutional recruitment bodies, ministries, state selection boards, and verified corporate employers.
         </Typography>
       </Box>

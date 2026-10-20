@@ -12,6 +12,7 @@ import { JobsListingPage } from '../pages/public/JobsListingPage.js';
 import { GovernmentJobsPage, PrivateJobsPage } from '../pages/public/GovernmentJobsPage.js';
 import { JobDetailPage } from '../pages/public/JobDetailPage.js';
 import { CategoriesPage } from '../pages/public/CategoriesPage.js';
+import { StateJobsPage } from '../pages/public/StateJobsPage.js';
 import { OrganizationsPage } from '../pages/public/OrganizationsPage.js';
 import {
   AboutPage,
@@ -23,6 +24,7 @@ import {
 } from '../pages/public/StaticPages.js';
 
 // Auth pages
+import { AuthLayout } from '../pages/auth/AuthLayout.js';
 import { LoginPage } from '../pages/auth/LoginPage.js';
 import { RegisterPage } from '../pages/auth/RegisterPage.js';
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '../pages/auth/ForgotPasswordPage.js';
@@ -53,6 +55,16 @@ const MainLayout: React.FC = () => {
 export const AppRouter: React.FC = () => {
   return (
     <Routes>
+      {/* Dedicated Modern Split-Screen Authentication Routes */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+      </Route>
+
+      {/* Main Layout for Public & Dashboard Pages */}
       <Route element={<MainLayout />}>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
@@ -60,6 +72,7 @@ export const AppRouter: React.FC = () => {
         <Route path="/government-jobs" element={<GovernmentJobsPage />} />
         <Route path="/private-jobs" element={<PrivateJobsPage />} />
         <Route path="/jobs/:slugOrId" element={<JobDetailPage />} />
+        <Route path="/state-jobs" element={<StateJobsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/organizations" element={<OrganizationsPage />} />
         <Route path="/about" element={<AboutPage />} />
@@ -67,13 +80,6 @@ export const AppRouter: React.FC = () => {
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/data-deletion" element={<DataDeletionPage />} />
-
-        {/* Authentication Routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
         {/* Protected Candidate Dashboard Routes */}
         <Route element={<ProtectedRoute />}>

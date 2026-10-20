@@ -71,6 +71,8 @@ export interface JobFilterQuery extends PaginationQuery {
   hasOfficialNotification?: boolean;
   upcomingOnly?: boolean;
   deadlineApproachingDays?: number;
+  stateOnly?: boolean;
+  isGovernment?: boolean;
 }
 
 export interface CreateJobRequest {

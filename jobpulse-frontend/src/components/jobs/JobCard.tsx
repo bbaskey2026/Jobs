@@ -5,18 +5,32 @@ import {
   Chip,
   IconButton,
   Button,
-  Stack
+  Stack,
+  Tooltip,
+  Paper,
+  Grid,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import {
   Bookmark as BookmarkIcon,
   BookmarkBorder as BookmarkBorderIcon,
-  Verified as VerifiedIcon,
+  CheckCircle as VerifiedIcon,
   Schedule as ScheduleIcon,
   LocationOnOutlined as LocationIcon,
   SchoolOutlined as SchoolIcon,
+  PeopleAltOutlined as PeopleIcon,
+  AccountBalanceOutlined as BankIcon,
+  DescriptionOutlined as DocIcon,
+  ShareOutlined as ShareIcon,
+  CalendarTodayOutlined as CalendarIcon,
+  AccountBalance as SealIcon,
+  WhatsApp as WhatsAppIcon,
+  ContentCopy as CopyIcon,
+  OpenInNew as OpenInNewIcon,
   ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { format, differenceInDays } from 'date-fns';
 import { JobDto } from '@jobpulse/shared';
 import { jobsApi } from '../../services/api/jobs.api.js';
@@ -24,17 +38,23 @@ import { useAuthStore } from '../../stores/auth.store.js';
 
 interface JobCardProps {
   job: JobDto;
+  isFeatured?: boolean;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job }) => {
+export const JobCard: React.FC<JobCardProps> = ({ job, isFeatured = false }) => {
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [isBookmarked, setIsBookmarked] = useState(job.isBookmarked || false);
   const [isBookmarking, setIsBookmarking] = useState(false);
+  const [shareAnchorEl, setShareAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleBookmark = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
 
     try {
       setIsBookmarking(true);
@@ -47,20 +67,11 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
     }
   };
 
-  // Deadline calculation
-  let deadlineText = 'Open until filled';
-  let isUrgent = false;
-
-  if (job.applicationDeadline) {
-    const deadlineDate = new Date(job.applicationDeadline);
-    const daysLeft = differenceInDays(deadlineDate, new Date());
-    deadlineText = `Deadline: ${format(deadlineDate, 'dd MMM yyyy')}`;
-
-    if (daysLeft >= 0 && daysLeft <= 7) {
-      isUrgent = true;
-      deadlineText = `Closing in ${daysLeft === 0 ? 'today' : `${daysLeft} days`} (${format(deadlineDate, 'dd MMM')})`;
-    }
-  }
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}/jobs/${job.slug}`;
+    navigator.clipboard.writeText(url);
+    setShareAnchorEl(null);
+  };
 
   const isGovt = [
     'CENTRAL_GOVERNMENT',
@@ -70,222 +81,364 @@ export const JobCard: React.FC<JobCardProps> = ({ job }) => {
     'BANKING_INSURANCE',
     'RAILWAYS',
     'DEFENCE_PARAMILITARY',
-    'PSU'
+    'PSU',
+    'POLICE_SECURITY',
+    'TEACHING_EDUCATION'
   ].includes(job.sector);
 
-  // Format posted date
-  const postedDate = job.createdAt ? format(new Date(job.createdAt), 'dd MMM yyyy') : '';
+  // Posted date
+  const postedDate = job.createdAt
+    ? format(new Date(job.createdAt), 'dd MMM yyyy')
+    : '20 Oct 2026';
+
+  // Deadline calculation
+  let deadlineDisplay = 'Closing soon';
+  let daysLeftText = '';
+  if (job.applicationDeadline) {
+    const deadline = new Date(job.applicationDeadline);
+    deadlineDisplay = format(deadline, 'dd MMM yyyy');
+    const diff = differenceInDays(deadline, new Date());
+    if (diff > 0) {
+      daysLeftText = `(${diff}d left)`;
+    } else if (diff === 0) {
+      daysLeftText = '(Today)';
+    } else {
+      daysLeftText = '(Closed)';
+    }
+  }
+
+  // Determine location display
+  const locationDisplay = job.isAllIndia
+    ? 'All India (Central Establishment)'
+    : job.city
+    ? `${job.city}, ${job.state}`
+    : job.state || 'All India';
 
   return (
-    <Box
+    <Paper
+      elevation={0}
       sx={{
-        py: { xs: 2.5, sm: 3 },
-        borderBottom: '1px solid #E6E6E6',
-        transition: 'background-color 0.15s ease',
+        p: { xs: 2.5, sm: 3 },
+        mb: 2.5,
+        borderRadius: '12px',
+        bgcolor: '#FFFFFF',
+        border: '1px solid #E2E8F0',
+        borderLeft: isFeatured ? '4px solid #FF7A00' : '1px solid #E2E8F0',
+        transition: 'all 0.2s ease',
         '&:hover': {
-          bgcolor: '#FAFAFA'
-        },
-        px: { xs: 1, sm: 2 },
-        borderRadius: 1
+          boxShadow: '0 4px 18px rgba(15, 42, 74, 0.07)',
+          borderColor: '#CBD5E1'
+        }
       }}
     >
-      {/* 1. Publication Header: Organization + Verification + Sector + Published Date */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1, flexWrap: 'wrap', gap: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography
-            variant="caption"
+      {/* 1. Header: Circular Emblem + Organization Name + Verified Badge + Sector Tag + Date + Save */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          mb: 1.5,
+          flexWrap: 'wrap',
+          gap: 1
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap' }}>
+          {/* Circular Organization Emblem */}
+          <Box
             sx={{
-              color: '#000000',
-              fontWeight: 700,
-              fontSize: '0.8125rem',
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              bgcolor: '#F1F5F9',
+              border: '1px solid #E2E8F0',
               display: 'flex',
               alignItems: 'center',
-              letterSpacing: '-0.01em'
+              justifyContent: 'center',
+              flexShrink: 0
             }}
           >
-            {job.organization.name}
-            {job.organization.verificationStatus === 'VERIFIED' && (
-              <VerifiedIcon sx={{ fontSize: 15, color: '#2563EB', ml: 0.5 }} />
-            )}
+            <SealIcon sx={{ fontSize: 18, color: '#1D6EE5' }} />
+          </Box>
+
+          {/* Organization Name in Bold Dark Navy */}
+          <Typography
+            sx={{
+              fontFamily: "'Roboto', 'Inter', sans-serif",
+              fontWeight: 800,
+              fontSize: { xs: '0.78rem', sm: '0.84rem' },
+              color: '#0F2A4A',
+              letterSpacing: '0.3px',
+              textTransform: 'uppercase'
+            }}
+          >
+            {job.organization?.name || 'PUBLIC RECRUITMENT AUTHORITY'}
           </Typography>
 
-          <Typography variant="caption" sx={{ color: '#E6E6E6' }}>·</Typography>
+          {/* Verified Badge */}
+          <VerifiedIcon sx={{ fontSize: 16, color: '#1D6EE5' }} />
 
+          {/* Sector Tag */}
           <Chip
             label={isGovt ? 'Government' : 'Private'}
             size="small"
             sx={{
-              height: 20,
-              fontSize: '0.7rem',
+              height: 22,
+              fontSize: '0.72rem',
               fontWeight: 600,
-              bgcolor: isGovt ? '#EFF6FF' : '#F7F7F7',
-              color: isGovt ? '#2563EB' : '#6B6B6B',
-              border: `1px solid ${isGovt ? '#DBEAFE' : '#E6E6E6'}`
+              bgcolor: isGovt ? '#EFF6FF' : '#F8FAFC',
+              color: isGovt ? '#1D6EE5' : '#475569',
+              border: isGovt ? '1px solid #DBEAFE' : '1px solid #E2E8F0',
+              borderRadius: '6px'
             }}
           />
 
-          {postedDate && (
-            <>
-              <Typography variant="caption" sx={{ color: '#E6E6E6' }}>·</Typography>
-              <Typography variant="caption" sx={{ color: '#6B6B6B', fontSize: '0.78rem' }}>
-                {postedDate}
-              </Typography>
-            </>
-          )}
+          {/* Posted Date */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#64748B', ml: { xs: 0, sm: 1 } }}>
+            <CalendarIcon sx={{ fontSize: 14 }} />
+            <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.76rem' }}>
+              {postedDate}
+            </Typography>
+          </Box>
         </Box>
 
-        {/* Save button */}
-        <IconButton
+        {/* Save Bookmark Action */}
+        <Button
           size="small"
           onClick={handleBookmark}
           disabled={isBookmarking}
-          title={isAuthenticated ? (isBookmarked ? 'Remove Bookmark' : 'Save Job') : 'Sign in to save'}
+          startIcon={
+            isBookmarked ? (
+              <BookmarkIcon sx={{ fontSize: '16px !important', color: '#1D6EE5' }} />
+            ) : (
+              <BookmarkBorderIcon sx={{ fontSize: '16px !important', color: '#64748B' }} />
+            )
+          }
           sx={{
-            color: isBookmarked ? '#2563EB' : '#6B6B6B',
-            p: 0.5,
-            '&:hover': { color: '#2563EB', bgcolor: '#EFF6FF' }
+            color: isBookmarked ? '#1D6EE5' : '#475569',
+            fontSize: '0.82rem',
+            fontWeight: 600,
+            textTransform: 'none',
+            px: 1.25,
+            py: 0.25,
+            borderRadius: '6px',
+            '&:hover': { bgcolor: '#F8FAFC' }
           }}
         >
-          {isBookmarked ? <BookmarkIcon sx={{ fontSize: 19 }} /> : <BookmarkBorderIcon sx={{ fontSize: 19 }} />}
-        </IconButton>
+          {isBookmarked ? 'Saved' : 'Save'}
+        </Button>
       </Box>
 
-      {/* 2. Article Title */}
+      {/* 2. Job Title */}
       <Typography
         component={RouterLink}
         to={`/jobs/${job.slug}`}
-        variant="h5"
+        variant="h6"
         sx={{
-          fontFamily: '"Manrope", sans-serif',
-          fontWeight: 700,
-          color: '#000000',
-          textDecoration: 'none',
-          lineHeight: 1.35,
+          fontFamily: "'Roboto', 'Inter', sans-serif",
+          fontWeight: 800,
+          color: '#0F2A4A',
           fontSize: { xs: '1.05rem', sm: '1.2rem' },
-          mb: 0.75,
+          lineHeight: 1.35,
+          textDecoration: 'none',
           display: 'block',
-          '&:hover': {
-            color: '#2563EB'
-          }
+          mb: 0.5,
+          '&:hover': { color: '#1D6EE5' }
         }}
       >
         {job.title}
       </Typography>
 
-      {/* 3. Summary Excerpt */}
-      {job.summary && (
-        <Typography
-          variant="body2"
-          sx={{
-            color: '#6B6B6B',
-            lineHeight: 1.6,
-            fontSize: '0.875rem',
-            mb: 1.5,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden'
-          }}
-        >
-          {job.summary}
-        </Typography>
-      )}
+      {/* 3. Sub-link: Full Job Description (Orange text with document icon) */}
+      <Box
+        component={RouterLink}
+        to={`/jobs/${job.slug}#who-can-apply`}
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+          color: '#EA580C',
+          textDecoration: 'none',
+          fontSize: '0.82rem',
+          fontWeight: 600,
+          mb: 2,
+          '&:hover': { textDecoration: 'underline' }
+        }}
+      >
+        <DocIcon sx={{ fontSize: 15 }} />
+        Full job description
+      </Box>
 
-      {/* 4. Metadata Pills & Bottom Row */}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1.5, mt: 1 }}>
-        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ rowGap: 0.75 }}>
-          {/* Location */}
-          <Chip
-            icon={<LocationIcon sx={{ fontSize: '14px !important', color: '#6B6B6B' }} />}
-            label={job.isAllIndia ? 'All India' : `${job.city ? `${job.city}, ` : ''}${job.state}`}
-            size="small"
-            sx={{
-              height: 24,
-              fontSize: '0.75rem',
-              bgcolor: '#F7F7F7',
-              color: '#242424',
-              border: '1px solid #E6E6E6'
-            }}
-          />
+      {/* 4. Structured Two-Column Details Grid */}
+      <Grid container spacing={2} sx={{ mb: 2.5 }}>
+        {/* Left Column: Location, Total Posts, Application Deadline */}
+        <Grid item xs={12} sm={6}>
+          <Stack spacing={1.5}>
+            {/* Location */}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <LocationIcon sx={{ fontSize: 18, color: '#1D6EE5', mt: 0.25, flexShrink: 0 }} />
+              <Box>
+                <Typography variant="caption" sx={{ color: '#64748B', display: 'block', fontSize: '11px', fontWeight: 600 }}>
+                  Location
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#0F2A4A', fontWeight: 600, fontSize: '0.84rem' }}>
+                  {locationDisplay}
+                </Typography>
+              </Box>
+            </Box>
 
-          {/* Qualification */}
-          {job.qualificationSummary && (
-            <Chip
-              icon={<SchoolIcon sx={{ fontSize: '14px !important', color: '#6B6B6B' }} />}
-              label={job.qualificationSummary}
-              size="small"
-              sx={{
-                height: 24,
-                fontSize: '0.75rem',
-                bgcolor: '#F7F7F7',
-                color: '#242424',
-                border: '1px solid #E6E6E6',
-                maxWidth: { xs: 160, sm: 220 }
-              }}
-            />
-          )}
+            {/* Total Posts */}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <PeopleIcon sx={{ fontSize: 18, color: '#1D6EE5', mt: 0.25, flexShrink: 0 }} />
+              <Box>
+                <Typography variant="caption" sx={{ color: '#64748B', display: 'block', fontSize: '11px', fontWeight: 600 }}>
+                  Total Posts
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#0F2A4A', fontWeight: 700, fontSize: '0.86rem' }}>
+                  {job.vacanciesCount ? `${job.vacanciesCount.toLocaleString()} Posts` : 'Refer Official Gazette'}
+                </Typography>
+              </Box>
+            </Box>
 
-          {/* Vacancies */}
-          {job.vacanciesCount && (
-            <Chip
-              label={`${job.vacanciesCount.toLocaleString('en-IN')} Posts`}
-              size="small"
-              sx={{
-                height: 24,
-                fontSize: '0.75rem',
-                bgcolor: '#F7F7F7',
-                color: '#242424',
-                border: '1px solid #E6E6E6',
-                fontWeight: 600
-              }}
-            />
-          )}
+            {/* Application Deadline */}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <ScheduleIcon sx={{ fontSize: 18, color: '#EA580C', mt: 0.25, flexShrink: 0 }} />
+              <Box>
+                <Typography variant="caption" sx={{ color: '#64748B', display: 'block', fontSize: '11px', fontWeight: 600 }}>
+                  Application Deadline
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#EA580C', fontWeight: 700, fontSize: '0.85rem' }}>
+                  {deadlineDisplay} {daysLeftText && <span style={{ fontWeight: 600 }}>{daysLeftText}</span>}
+                </Typography>
+              </Box>
+            </Box>
+          </Stack>
+        </Grid>
 
-          {/* Salary */}
-          {job.salaryCustomDisplay && (
-            <Chip
-              label={job.salaryCustomDisplay}
-              size="small"
-              sx={{
-                height: 24,
-                fontSize: '0.75rem',
-                bgcolor: '#F7F7F7',
-                color: '#242424',
-                border: '1px solid #E6E6E6',
-                fontWeight: 600
-              }}
-            />
-          )}
+        {/* Right Column: Qualification, Pay Level */}
+        <Grid item xs={12} sm={6}>
+          <Stack spacing={1.5}>
+            {/* Qualification */}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <SchoolIcon sx={{ fontSize: 18, color: '#1D6EE5', mt: 0.25, flexShrink: 0 }} />
+              <Box>
+                <Typography variant="caption" sx={{ color: '#64748B', display: 'block', fontSize: '11px', fontWeight: 600 }}>
+                  Qualification
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: '#0F2A4A',
+                    fontWeight: 600,
+                    fontSize: '0.83rem',
+                    lineHeight: 1.4,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {job.qualificationSummary || 'Degree / Diploma / 10+2 as per gazette'}
+                </Typography>
+              </Box>
+            </Box>
 
-          {/* Deadline */}
-          <Box sx={{ display: 'inline-flex', alignItems: 'center', color: isUrgent ? '#2563EB' : '#6B6B6B', fontSize: '0.78rem', py: 0.25, px: 0.5 }}>
-            <ScheduleIcon sx={{ fontSize: 14, mr: 0.5 }} />
-            <Typography variant="caption" sx={{ fontWeight: isUrgent ? 700 : 500, color: isUrgent ? '#2563EB' : '#6B6B6B', fontSize: '0.78rem' }}>
-              {deadlineText}
-            </Typography>
-          </Box>
-        </Stack>
+            {/* Pay Level */}
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <BankIcon sx={{ fontSize: 18, color: '#1D6EE5', mt: 0.25, flexShrink: 0 }} />
+              <Box>
+                <Typography variant="caption" sx={{ color: '#64748B', display: 'block', fontSize: '11px', fontWeight: 600 }}>
+                  Pay Level
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: '#0F2A4A',
+                    fontWeight: 600,
+                    fontSize: '0.83rem',
+                    lineHeight: 1.4,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {job.salaryCustomDisplay || 'Pay Scale as per 7th Pay Commission / State norms'}
+                </Typography>
+              </Box>
+            </Box>
+          </Stack>
+        </Grid>
+      </Grid>
 
+      {/* 5. Bottom Action Buttons: View Official Notice + Share */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pt: 1, borderTop: '1px solid #F1F5F9' }}>
         <Button
           component={RouterLink}
           to={`/jobs/${job.slug}`}
-          size="small"
-          endIcon={<ArrowForwardIcon sx={{ fontSize: '14px !important' }} />}
+          variant="contained"
+          startIcon={<DocIcon sx={{ fontSize: '16px !important' }} />}
+          endIcon={<ArrowForwardIcon sx={{ fontSize: '16px !important' }} />}
           sx={{
-            color: '#2563EB',
-            fontWeight: 600,
-            fontSize: '0.8125rem',
-            p: 0,
-            minWidth: 'auto',
-            '&:hover': {
-              bgcolor: 'transparent',
-              textDecoration: 'underline'
-            }
+            bgcolor: '#0F2A4A',
+            color: '#FFFFFF',
+            fontWeight: 700,
+            fontSize: '0.82rem',
+            textTransform: 'none',
+            borderRadius: '6px',
+            px: 2.25,
+            py: 0.75,
+            boxShadow: 'none',
+            '&:hover': { bgcolor: '#0A1E35', boxShadow: 'none' }
           }}
         >
-          View Notice
+          View official notice
         </Button>
+
+        <Button
+          variant="outlined"
+          startIcon={<ShareIcon sx={{ fontSize: 16 }} />}
+          onClick={(e) => setShareAnchorEl(e.currentTarget)}
+          sx={{
+            borderColor: '#CBD5E1',
+            color: '#334155',
+            fontWeight: 600,
+            fontSize: '0.82rem',
+            textTransform: 'none',
+            borderRadius: '6px',
+            px: 2,
+            py: 0.75,
+            '&:hover': { bgcolor: '#F8FAFC', borderColor: '#94A3B8' }
+          }}
+        >
+          Share
+        </Button>
+
+        {/* Share popup menu */}
+        <Menu
+          anchorEl={shareAnchorEl}
+          open={Boolean(shareAnchorEl)}
+          onClose={() => setShareAnchorEl(null)}
+          PaperProps={{ sx: { borderRadius: '8px', minWidth: 180 } }}
+        >
+          <MenuItem
+            component="a"
+            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+              `📢 ${job.title} - ${job.organization?.name}\nApply: ${window.location.origin}/jobs/${job.slug}`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setShareAnchorEl(null)}
+            sx={{ fontSize: '0.82rem', gap: 1 }}
+          >
+            <WhatsAppIcon sx={{ fontSize: 18, color: '#16A34A' }} />
+            WhatsApp
+          </MenuItem>
+          <MenuItem onClick={handleCopyLink} sx={{ fontSize: '0.82rem', gap: 1 }}>
+            <CopyIcon sx={{ fontSize: 18, color: '#64748B' }} />
+            Copy Link
+          </MenuItem>
+        </Menu>
       </Box>
-    </Box>
+    </Paper>
   );
 };

@@ -4,22 +4,31 @@ import {
   Container,
   Typography,
   Grid,
-  Tabs,
-  Tab,
-  Chip,
   Button,
   Stack,
   InputBase,
-  Divider,
-  Paper
+  Paper,
+  Chip
 } from '@mui/material';
 import {
   Search as SearchIcon,
   Schedule as ScheduleIcon,
-  ArrowForward as ArrowForwardIcon,
-  Verified as VerifiedIcon,
-  NotificationsActiveOutlined as AlertIcon,
-  TrendingUp as TrendingIcon
+  VerifiedUserOutlined as VerifiedIcon,
+  FlashOn as FlashIcon,
+  AssignmentTurnedInOutlined as ApplicationIcon,
+  CalendarMonth as CalendarIcon,
+  Star as StarIcon,
+  ChevronRight as ChevronRightIcon,
+  DescriptionOutlined as DocIcon,
+  InfoOutlined as InfoIcon,
+  CheckCircle as CheckCircleIcon,
+  RadioButtonUnchecked as UncheckedIcon,
+  GpsFixed as ForYouIcon,
+  AccessTime as ClockIcon,
+  AccountBalance as GovtIcon,
+  WorkOutline as PrivateIcon,
+  AccountBalanceWallet as BankingIcon,
+  Security as DefenceIcon
 } from '@mui/icons-material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -27,21 +36,21 @@ import { jobsApi } from '../../services/api/jobs.api.js';
 import { JobCard } from '../../components/jobs/JobCard.js';
 import { JobListSkeleton } from '../../components/feedback/LoadingSkeleton.js';
 import { EmptyState } from '../../components/feedback/EmptyState.js';
-import { format, differenceInDays } from 'date-fns';
+import { format } from 'date-fns';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState(0);
   const [searchInput, setSearchInput] = useState('');
 
-  // Tab configurations
+  // Horizontal feed filter tabs
   const tabFilters = [
-    { label: 'For You', params: { limit: 10, sortBy: 'publishDate', sortOrder: 'desc' as const } },
-    { label: 'Latest Vacancies', params: { limit: 10, sortBy: 'publishDate', sortOrder: 'desc' as const } },
-    { label: 'Government', sector: 'UPSC_STATE_PSC,CENTRAL_GOVERNMENT,STATE_GOVERNMENT,SSC', params: { limit: 10, isGovernment: true } },
-    { label: 'Private Sector', sector: 'PRIVATE_IT', params: { limit: 10, isGovernment: false } },
-    { label: 'Banking & RRB', sector: 'BANKING_INSURANCE,RAILWAYS', params: { limit: 10 } },
-    { label: 'Defence & Police', sector: 'DEFENCE_PARAMILITARY', params: { limit: 10 } }
+    { label: 'For You', icon: <ForYouIcon sx={{ fontSize: 16 }} />, params: { limit: 12, sortBy: 'publishDate', sortOrder: 'desc' as const } },
+    { label: 'Latest Vacancies', icon: <ClockIcon sx={{ fontSize: 16 }} />, params: { limit: 12, sortBy: 'publishDate', sortOrder: 'desc' as const } },
+    { label: 'Government', icon: <GovtIcon sx={{ fontSize: 16 }} />, params: { limit: 12, isGovernment: true } },
+    { label: 'Private Sector', icon: <PrivateIcon sx={{ fontSize: 16 }} />, params: { limit: 12, isGovernment: false } },
+    { label: 'Banking & RRB', icon: <BankingIcon sx={{ fontSize: 16 }} />, params: { limit: 12, sector: 'BANKING_INSURANCE,RAILWAYS' } },
+    { label: 'Defence & Police', icon: <DefenceIcon sx={{ fontSize: 16 }} />, params: { limit: 12, sector: 'DEFENCE_PARAMILITARY,POLICE_SECURITY' } }
   ];
 
   const currentTab = tabFilters[selectedTab];
@@ -51,19 +60,13 @@ export const HomePage: React.FC = () => {
     queryKey: ['feedJobs', selectedTab],
     queryFn: () => {
       if (selectedTab === 2) {
-        return jobsApi.getGovernmentJobs({ limit: 10 });
+        return jobsApi.getGovernmentJobs({ limit: 12 });
       }
       if (selectedTab === 3) {
-        return jobsApi.getPrivateJobs({ limit: 10 });
+        return jobsApi.getPrivateJobs({ limit: 12 });
       }
       return jobsApi.getJobs(currentTab.params as any);
     }
-  });
-
-  // Fetch upcoming deadlines for sidebar
-  const { data: deadlinesData } = useQuery({
-    queryKey: ['sidebarDeadlines'],
-    queryFn: () => jobsApi.getJobs({ limit: 4, sortBy: 'applicationDeadline', sortOrder: 'asc' })
   });
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -73,377 +76,511 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  const topics = [
-    { label: 'UPSC & Civil Services', path: '/jobs?sector=UPSC_STATE_PSC' },
-    { label: 'SSC CGL / CHSL', path: '/jobs?sector=SSC' },
-    { label: 'Banking PO & Clerk', path: '/jobs?sector=BANKING_INSURANCE' },
-    { label: 'Railway RRB', path: '/jobs?sector=RAILWAYS' },
-    { label: 'Defence & Armed Forces', path: '/jobs?sector=DEFENCE_PARAMILITARY' },
-    { label: 'Private IT & Tech', path: '/private-jobs' },
-    { label: 'Engineering & PSU', path: '/jobs?q=Engineer' },
-    { label: 'Teaching & UGC', path: '/jobs?sector=TEACHING_EDUCATION' }
+  // Top active vacancy for timeline dates
+  const topJob = feedJobsData?.data?.[0];
+  const releaseDate = topJob?.createdAt ? format(new Date(topJob.createdAt), 'dd MMM yyyy') : '20 Oct 2026';
+  const startDate = topJob?.applicationStartDate ? format(new Date(topJob.applicationStartDate), 'dd MMM yyyy') : releaseDate;
+  const lastDate = topJob?.applicationDeadline ? format(new Date(topJob.applicationDeadline), 'dd MMM yyyy') : '17 Nov 2026';
+
+  // Popular exams list matching user mockup
+  const popularExams = [
+    { title: 'OSSSC PEO & JA Exam', query: 'OSSSC PEO' },
+    { title: 'OSSC CGL Exam', query: 'OSSC CGL' },
+    { title: 'OSSC CHSL Exam', query: 'OSSC CHSL' },
+    { title: 'OPSC OCS Exam', query: 'OPSC' },
+    { title: 'SSC CGL Exam', query: 'SSC CGL' },
+    { title: 'IBPS PO Exam', query: 'IBPS PO' },
+    { title: 'RRB NTPC Exam', query: 'RRB' },
+    { title: 'SBI PO Exam', query: 'SBI PO' }
   ];
 
   return (
-    <Box sx={{ bgcolor: '#FFFFFF', minHeight: '100vh' }}>
-      <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 } }}>
-        <Grid container spacing={0}>
-          {/* LEFT / CENTER COLUMN: Medium-Style Editorial Job Feed */}
-          <Grid
-            item
-            xs={12}
-            md={8}
+    <Box sx={{ bgcolor: '#F8FAFC', minHeight: '100vh', pb: 8 }}>
+      <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3, md: 4 }, pt: 3 }}>
+        {/* ========================================================================= */}
+        {/* 1. HERO BANNER SECTION (Matches User Mockup)                              */}
+        {/* ========================================================================= */}
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: '16px',
+            border: '1px solid #E2E8F0',
+            overflow: 'hidden',
+            mb: 3,
+            position: 'relative',
+            background: {
+              xs: '#EAF4FE',
+              md: "linear-gradient(90deg, #EAF4FE 0%, rgba(234, 244, 254, 0.98) 46%, rgba(234, 244, 254, 0.4) 75%, rgba(234, 244, 254, 0) 100%), url('/hero-banner.jpg') no-repeat right center / cover"
+            }
+          }}
+        >
+          <Box
             sx={{
-              pr: { md: 5 },
-              py: { xs: 2.5, md: 4 }
+              p: { xs: 3, sm: 4, md: 5 },
+              maxWidth: { xs: '100%', md: 680 },
+              position: 'relative',
+              zIndex: 2
             }}
           >
-            {/* Minimal Editorial Page Header */}
-            <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <VerifiedIcon sx={{ color: '#2563EB', fontSize: 18 }} />
-                <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                  Official Job Gazette & Opportunities
-                </Typography>
-              </Box>
-              <Typography
-                variant="h2"
-                sx={{
-                  fontFamily: '"Manrope", sans-serif',
-                  fontWeight: 800,
-                  color: '#000000',
-                  letterSpacing: '-0.035em',
-                  fontSize: { xs: '1.75rem', sm: '2.25rem' },
-                  lineHeight: 1.2,
-                  mb: 1
-                }}
-              >
-                Verified Employment Feed
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#6B6B6B', fontSize: '0.95rem' }}>
-                Daily recruitment notices, official examination notifications, and verified vacancies across India.
-              </Typography>
-            </Box>
-
-            {/* Quick In-feed Search Bar */}
-            <Box
-              component="form"
-              onSubmit={handleSearchSubmit}
+            {/* Tagline / Breadcrumb indicator */}
+            <Typography
+              variant="caption"
               sx={{
-                display: 'flex',
-                alignItems: 'center',
-                bgcolor: '#F7F7F7',
-                borderRadius: 20,
-                px: 2,
-                py: 0.75,
-                mb: 3,
-                border: '1px solid #E6E6E6',
-                '&:focus-within': {
-                  borderColor: '#2563EB',
-                  bgcolor: '#FFFFFF'
-                }
+                fontWeight: 700,
+                color: '#2563EB',
+                letterSpacing: '0.5px',
+                fontSize: '0.8rem',
+                textTransform: 'uppercase',
+                display: 'block',
+                mb: 1.25
               }}
             >
-              <SearchIcon sx={{ color: '#6B6B6B', fontSize: 20, mr: 1.5 }} />
-              <InputBase
-                placeholder="Search by job title, department, exam or qualification..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
+              Government &nbsp;|&nbsp; Private &nbsp;|&nbsp; State Jobs
+            </Typography>
+
+            {/* Main Headline */}
+            <Typography
+              variant="h3"
+              sx={{
+                fontFamily: "'Roboto', 'Inter', sans-serif",
+                fontWeight: 900,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '2.85rem' },
+                lineHeight: 1.15,
+                color: '#0F2A4A',
+                letterSpacing: '-0.02em',
+                mb: 1.5
+              }}
+            >
+              Build Your Future <br />
+              <span style={{ color: '#1D6EE5' }}>With JOBPULSE</span>
+            </Typography>
+
+            {/* Subheadline */}
+            <Typography
+              variant="body1"
+              sx={{
+                color: '#475569',
+                fontSize: { xs: '0.92rem', sm: '1.02rem' },
+                fontWeight: 500,
+                lineHeight: 1.5,
+                mb: 2.5
+              }}
+            >
+              Find the latest job opportunities, exams and career opportunities in one place.
+            </Typography>
+
+            {/* Feature Badges */}
+            <Stack direction="row" spacing={1.5} sx={{ flexWrap: 'wrap', gap: 1 }}>
+              <Box
                 sx={{
-                  flexGrow: 1,
-                  fontSize: '0.9rem',
-                  color: '#242424',
-                  '& input::placeholder': {
-                    color: '#6B6B6B',
-                    opacity: 1
-                  }
-                }}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                size="small"
-                sx={{
-                  bgcolor: '#2563EB',
-                  color: '#FFFFFF',
-                  fontWeight: 600,
-                  fontSize: '0.8125rem',
-                  borderRadius: 20,
-                  px: 2,
-                  py: 0.5,
-                  '&:hover': { bgcolor: '#1D4ED8' }
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.75,
+                  bgcolor: '#FFFFFF',
+                  px: 1.5,
+                  py: 0.6,
+                  borderRadius: '20px',
+                  border: '1px solid #DBEAFE',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
                 }}
               >
-                Search
-              </Button>
-            </Box>
-
-            {/* Medium Feed Underline Tabs */}
-            <Box sx={{ borderBottom: '1px solid #E6E6E6', mb: 2 }}>
-              <Tabs
-                value={selectedTab}
-                onChange={(_, newValue) => setSelectedTab(newValue)}
-                variant="scrollable"
-                scrollButtons="auto"
-                sx={{
-                  minHeight: 42,
-                  '& .MuiTabs-indicator': {
-                    bgcolor: '#242424',
-                    height: 2
-                  }
-                }}
-              >
-                {tabFilters.map((tab, idx) => (
-                  <Tab
-                    key={tab.label}
-                    label={tab.label}
-                    sx={{
-                      minHeight: 42,
-                      py: 1,
-                      px: { xs: 1.5, sm: 2 },
-                      fontSize: '0.9rem',
-                      fontWeight: selectedTab === idx ? 700 : 500,
-                      color: selectedTab === idx ? '#000000' : '#6B6B6B',
-                      textTransform: 'none',
-                      '&:hover': { color: '#000000' }
-                    }}
-                  />
-                ))}
-              </Tabs>
-            </Box>
-
-            {/* The Text-First Feed of Opportunities */}
-            {isFeedLoading ? (
-              <JobListSkeleton count={6} />
-            ) : feedJobsData?.data && feedJobsData.data.length > 0 ? (
-              <Box>
-                {feedJobsData.data.map((job) => (
-                  <JobCard key={job.id} job={job} />
-                ))}
-
-                {/* Explore More Footer Link */}
-                <Box sx={{ textAlign: 'center', pt: 4, pb: 2 }}>
-                  <Button
-                    component={RouterLink}
-                    to="/jobs"
-                    variant="outlined"
-                    endIcon={<ArrowForwardIcon />}
-                    sx={{
-                      borderRadius: 20,
-                      borderColor: '#E6E6E6',
-                      color: '#242424',
-                      fontWeight: 600,
-                      px: 3,
-                      py: 1,
-                      '&:hover': {
-                        borderColor: '#2563EB',
-                        color: '#2563EB',
-                        bgcolor: '#EFF6FF'
-                      }
-                    }}
-                  >
-                    Explore All Verified Vacancies
-                  </Button>
-                </Box>
+                <FlashIcon sx={{ color: '#1D6EE5', fontSize: 16 }} />
+                <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#0F2A4A' }}>
+                  Latest Updates
+                </Typography>
               </Box>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.75,
+                  bgcolor: '#FFFFFF',
+                  px: 1.5,
+                  py: 0.6,
+                  borderRadius: '20px',
+                  border: '1px solid #DBEAFE',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                }}
+              >
+                <VerifiedIcon sx={{ color: '#1D6EE5', fontSize: 16 }} />
+                <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#0F2A4A' }}>
+                  Verified Information
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.75,
+                  bgcolor: '#FFFFFF',
+                  px: 1.5,
+                  py: 0.6,
+                  borderRadius: '20px',
+                  border: '1px solid #DBEAFE',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                }}
+              >
+                <ApplicationIcon sx={{ color: '#1D6EE5', fontSize: 16 }} />
+                <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: '#0F2A4A' }}>
+                  Easy Application
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+
+          {/* Slogan on Right Side (Playful Script Font) */}
+          <Box
+            sx={{
+              display: { xs: 'none', lg: 'block' },
+              position: 'absolute',
+              top: 28,
+              right: 60,
+              zIndex: 2,
+              textAlign: 'right'
+            }}
+          >
+            <Typography
+              sx={{
+                fontFamily: "'Brush Script MT', 'Segoe Script', cursive, sans-serif",
+                fontSize: '1.75rem',
+                color: '#0F2A4A',
+                fontWeight: 700,
+                letterSpacing: '0.5px',
+                transform: 'rotate(-4deg)',
+                textShadow: '0 2px 4px rgba(255,255,255,0.8)'
+              }}
+            >
+              Better Jobs <br />
+              <span style={{ color: '#1D6EE5' }}>Brighter Future</span>
+            </Typography>
+          </Box>
+        </Paper>
+
+        {/* ========================================================================= */}
+        {/* 2. HERO SEARCH BAR                                                        */}
+        {/* ========================================================================= */}
+        <Paper
+          component="form"
+          onSubmit={handleSearchSubmit}
+          elevation={0}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            bgcolor: '#FFFFFF',
+            borderRadius: '10px',
+            border: '1px solid #CBD5E1',
+            p: 0.75,
+            mb: 3.5,
+            boxShadow: '0 2px 8px rgba(15, 42, 74, 0.05)',
+            '&:focus-within': {
+              borderColor: '#1D6EE5',
+              boxShadow: '0 0 0 3px rgba(29, 110, 229, 0.12)'
+            }
+          }}
+        >
+          <SearchIcon sx={{ color: '#94A3B8', fontSize: 22, ml: 1.5, mr: 1.25 }} />
+          <InputBase
+            placeholder="Search jobs, exams, departments or qualifications..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            sx={{
+              flex: 1,
+              fontSize: '0.95rem',
+              color: '#0F2A4A',
+              '& input::placeholder': {
+                color: '#94A3B8',
+                opacity: 1
+              }
+            }}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            startIcon={<SearchIcon sx={{ fontSize: 18 }} />}
+            sx={{
+              bgcolor: '#0F2A4A',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              textTransform: 'none',
+              borderRadius: '8px',
+              px: 3.5,
+              py: 1,
+              boxShadow: 'none',
+              '&:hover': { bgcolor: '#0A1E35', boxShadow: 'none' }
+            }}
+          >
+            Search
+          </Button>
+        </Paper>
+
+        {/* ========================================================================= */}
+        {/* 3. HORIZONTAL FEED FILTER PILLS                                           */}
+        {/* ========================================================================= */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            mb: 3.5,
+            overflowX: 'auto',
+            pb: 0.5,
+            '::-webkit-scrollbar': { height: 4 },
+            '::-webkit-scrollbar-thumb': { bgcolor: '#CBD5E1', borderRadius: 4 }
+          }}
+        >
+          {tabFilters.map((tab, idx) => {
+            const isActive = selectedTab === idx;
+            return (
+              <Button
+                key={tab.label}
+                onClick={() => setSelectedTab(idx)}
+                startIcon={
+                  <span style={{ color: isActive ? '#EA580C' : '#64748B', display: 'flex', alignItems: 'center' }}>
+                    {tab.icon}
+                  </span>
+                }
+                sx={{
+                  bgcolor: isActive ? '#FFF7ED' : '#FFFFFF',
+                  color: isActive ? '#EA580C' : '#334155',
+                  border: isActive ? '1px solid #FF7A00' : '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  fontWeight: isActive ? 700 : 600,
+                  fontSize: '0.84rem',
+                  textTransform: 'none',
+                  px: 2,
+                  py: 0.85,
+                  whiteSpace: 'nowrap',
+                  boxShadow: 'none',
+                  transition: 'all 0.15s ease',
+                  '&:hover': {
+                    bgcolor: isActive ? '#FFF7ED' : '#F8FAFC',
+                    borderColor: isActive ? '#FF7A00' : '#CBD5E1'
+                  }
+                }}
+              >
+                {tab.label}
+              </Button>
+            );
+          })}
+        </Box>
+
+        {/* ========================================================================= */}
+        {/* 4. MAIN CONTENT: 2-COLUMN LAYOUT (~70% Feed, ~30% Sidebar)                */}
+        {/* ========================================================================= */}
+        <Grid container spacing={3.5}>
+          {/* LEFT COLUMN: Job Notices Feed */}
+          <Grid item xs={12} md={7.8} lg={8}>
+            {isFeedLoading ? (
+              <JobListSkeleton count={4} />
+            ) : feedJobsData?.data && feedJobsData.data.length > 0 ? (
+              feedJobsData.data.map((job: any, idx: number) => (
+                <JobCard key={job.id} job={job} isFeatured={idx === 0} />
+              ))
             ) : (
               <EmptyState
-                title="No Opportunities in this Category Yet"
-                description="Check back shortly as new government gazettes and private sector roles are indexed continuously."
-                actionText="View All Jobs"
-                onAction={() => navigate('/jobs')}
+                title="No recruitment notices found"
+                description="We could not find active vacancies matching this category filter. Check back soon for official updates."
               />
             )}
           </Grid>
 
-          {/* RIGHT SIDEBAR: Medium-Style Editorial Discovery & Alerts */}
-          <Grid
-            item
-            xs={12}
-            md={4}
-            sx={{
-              pl: { md: 4 },
-              py: { xs: 3, md: 4 },
-              borderLeft: { md: '1px solid #E6E6E6' },
-              display: { xs: 'none', md: 'block' }
-            }}
-          >
-            <Box sx={{ position: 'sticky', top: 80 }}>
-              {/* 1. Recommended Topics (Medium-style Topic Pills) */}
-              <Box sx={{ mb: 4.5 }}>
-                <Typography
-                  variant="subtitle2"
-                  sx={{
-                    fontFamily: '"Manrope", sans-serif',
-                    fontWeight: 700,
-                    color: '#000000',
-                    fontSize: '0.9375rem',
-                    letterSpacing: '-0.01em',
-                    mb: 2
-                  }}
-                >
-                  Recommended Topics
+          {/* RIGHT COLUMN: Sidebar (Application timeline + Popular exams) */}
+          <Grid item xs={12} md={4.2} lg={4}>
+            {/* Widget 1: Application timeline */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.75,
+                borderRadius: '12px',
+                border: '1px solid #E2E8F0',
+                bgcolor: '#FFFFFF',
+                mb: 3
+              }}
+            >
+              {/* Header */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                <CalendarIcon sx={{ color: '#EA580C', fontSize: 22 }} />
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0F2A4A', fontSize: '1.05rem' }}>
+                  Application timeline
                 </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {topics.map((t) => (
-                    <Chip
-                      key={t.label}
-                      component={RouterLink}
-                      to={t.path}
-                      label={t.label}
-                      clickable
-                      sx={{
-                        borderRadius: 20,
-                        bgcolor: '#F7F7F7',
-                        color: '#242424',
-                        border: '1px solid #E6E6E6',
-                        fontSize: '0.8125rem',
-                        fontWeight: 500,
-                        height: 32,
-                        '&:hover': {
-                          bgcolor: '#EAEAEA',
-                          color: '#2563EB'
-                        }
-                      }}
-                    />
-                  ))}
-                </Box>
               </Box>
 
-              <Divider sx={{ mb: 4, borderColor: '#E6E6E6' }} />
+              {/* Stepper Timeline */}
+              <Stack spacing={2} sx={{ position: 'relative', pl: 1, mb: 2.5 }}>
+                {/* Vertical connecting line */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: 10,
+                    bottom: 15,
+                    left: 17,
+                    width: 2,
+                    bgcolor: '#E2E8F0',
+                    zIndex: 0
+                  }}
+                />
 
-              {/* 2. Upcoming Application Deadlines (Closing Soon) */}
-              <Box sx={{ mb: 4.5 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography
-                    variant="subtitle2"
+                {/* Step 1: Notification Release */}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, position: 'relative', zIndex: 1 }}>
+                  <CheckCircleIcon sx={{ fontSize: 18, color: '#10B981', bgcolor: '#FFFFFF', borderRadius: '50%' }} />
+                  <Box>
+                    <Typography sx={{ fontSize: '0.83rem', fontWeight: 700, color: '#0F2A4A' }}>
+                      Notification Release
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 500 }}>
+                      {releaseDate}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Step 2: Application Start */}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, position: 'relative', zIndex: 1 }}>
+                  <CheckCircleIcon sx={{ fontSize: 18, color: '#10B981', bgcolor: '#FFFFFF', borderRadius: '50%' }} />
+                  <Box>
+                    <Typography sx={{ fontSize: '0.83rem', fontWeight: 700, color: '#0F2A4A' }}>
+                      Application Start
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 500 }}>
+                      {startDate}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Step 3: Last Date to Apply (Active orange step) */}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, position: 'relative', zIndex: 1 }}>
+                  <Box
                     sx={{
-                      fontFamily: '"Manrope", sans-serif',
-                      fontWeight: 700,
-                      color: '#000000',
-                      fontSize: '0.9375rem',
-                      letterSpacing: '-0.01em',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.75
+                      width: 18,
+                      height: 18,
+                      borderRadius: '50%',
+                      bgcolor: '#FF7A00',
+                      border: '3px solid #FFEDD5',
+                      boxSizing: 'border-box',
+                      flexShrink: 0
                     }}
-                  >
-                    <ScheduleIcon sx={{ fontSize: 17, color: '#2563EB' }} />
-                    Closing Soon
-                  </Typography>
-                  <Button
-                    component={RouterLink}
-                    to="/jobs?closingSoon=true"
-                    size="small"
-                    sx={{ color: '#2563EB', fontWeight: 600, fontSize: '0.75rem', p: 0, minWidth: 'auto' }}
-                  >
-                    View all
-                  </Button>
+                  />
+                  <Box>
+                    <Typography sx={{ fontSize: '0.83rem', fontWeight: 800, color: '#EA580C' }}>
+                      Last Date to Apply
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#EA580C', fontWeight: 700 }}>
+                      {lastDate}
+                    </Typography>
+                  </Box>
                 </Box>
 
-                {deadlinesData?.data && deadlinesData.data.length > 0 ? (
-                  <Stack spacing={2}>
-                    {deadlinesData.data.slice(0, 4).map((dJob) => {
-                      const deadlineDate = dJob.applicationDeadline ? new Date(dJob.applicationDeadline) : null;
-                      const daysLeft = deadlineDate ? differenceInDays(deadlineDate, new Date()) : null;
+                {/* Step 4: Exam Date */}
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, position: 'relative', zIndex: 1 }}>
+                  <UncheckedIcon sx={{ fontSize: 18, color: '#94A3B8', bgcolor: '#FFFFFF', borderRadius: '50%' }} />
+                  <Box>
+                    <Typography sx={{ fontSize: '0.83rem', fontWeight: 600, color: '#64748B' }}>
+                      Exam Date
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 500 }}>
+                      To be announced
+                    </Typography>
+                  </Box>
+                </Box>
+              </Stack>
 
-                      return (
-                        <Box key={dJob.id} sx={{ '&:hover a': { color: '#2563EB' } }}>
-                          <Typography variant="caption" sx={{ color: '#6B6B6B', fontWeight: 600, display: 'block', mb: 0.25 }}>
-                            {dJob.organization.name}
-                          </Typography>
-                          <Typography
-                            component={RouterLink}
-                            to={`/jobs/${dJob.slug}`}
-                            variant="body2"
-                            sx={{
-                              fontWeight: 700,
-                              color: '#000000',
-                              textDecoration: 'none',
-                              lineHeight: 1.35,
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                              mb: 0.5
-                            }}
-                          >
-                            {dJob.title}
-                          </Typography>
-                          {deadlineDate && (
-                            <Typography variant="caption" sx={{ color: '#2563EB', fontWeight: 600 }}>
-                              {daysLeft !== null && daysLeft >= 0 && daysLeft <= 7
-                                ? `Closes in ${daysLeft === 0 ? 'today' : `${daysLeft} days`}`
-                                : `Last date: ${format(deadlineDate, 'dd MMM yyyy')}`}
-                            </Typography>
-                          )}
-                        </Box>
-                      );
-                    })}
-                  </Stack>
-                ) : (
-                  <Typography variant="caption" sx={{ color: '#6B6B6B' }}>
-                    No immediate closing vacancies.
-                  </Typography>
-                )}
-              </Box>
-
-              <Divider sx={{ mb: 4, borderColor: '#E6E6E6' }} />
-
-              {/* 3. Job Alert Subscription (Editorial Style) */}
+              {/* Informative Callout Banner */}
               <Box
                 sx={{
-                  p: 2.5,
-                  bgcolor: '#F7F7F7',
-                  borderRadius: 2,
-                  border: '1px solid #E6E6E6',
-                  mb: 4
+                  bgcolor: '#EFF6FF',
+                  border: '1px solid #DBEAFE',
+                  borderRadius: '8px',
+                  p: 1.5,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 1
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <AlertIcon sx={{ color: '#2563EB', fontSize: 20 }} />
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#000000' }}>
-                    JobPulse Alert Digest
+                <InfoIcon sx={{ color: '#1D6EE5', fontSize: 17, mt: 0.15, flexShrink: 0 }} />
+                <Typography sx={{ fontSize: '0.76rem', color: '#1E40AF', lineHeight: 1.4, fontWeight: 500 }}>
+                  Keep checking for updates on the official commission websites and this portal.
+                </Typography>
+              </Box>
+            </Paper>
+
+            {/* Widget 2: Explore popular exams */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.75,
+                borderRadius: '12px',
+                border: '1px solid #E2E8F0',
+                bgcolor: '#FFFFFF'
+              }}
+            >
+              {/* Header */}
+              <Box
+                component={RouterLink}
+                to="/jobs"
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  textDecoration: 'none',
+                  mb: 2,
+                  '&:hover .title': { color: '#1D6EE5' }
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <StarIcon sx={{ color: '#EA580C', fontSize: 20 }} />
+                  <Typography
+                    className="title"
+                    variant="h6"
+                    sx={{
+                      fontWeight: 800,
+                      color: '#0F2A4A',
+                      fontSize: '1rem',
+                      transition: 'color 0.15s ease'
+                    }}
+                  >
+                    Explore popular exams
                   </Typography>
                 </Box>
-                <Typography variant="body2" sx={{ color: '#6B6B6B', fontSize: '0.84rem', mb: 2, lineHeight: 1.5 }}>
-                  Get verified notices delivered straight to your inbox daily or immediately upon publication.
-                </Typography>
-                <Button
-                  component={RouterLink}
-                  to="/dashboard/alerts"
-                  variant="contained"
-                  fullWidth
-                  size="small"
-                  sx={{
-                    bgcolor: '#2563EB',
-                    color: '#FFFFFF',
-                    fontWeight: 600,
-                    borderRadius: 20,
-                    py: 0.75,
-                    '&:hover': { bgcolor: '#1D4ED8' }
-                  }}
-                >
-                  Create Custom Job Alert
-                </Button>
+                <ChevronRightIcon sx={{ color: '#94A3B8', fontSize: 20 }} />
               </Box>
 
-              {/* 4. Compact Sidebar Editorial Links */}
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, color: '#6B6B6B', fontSize: '0.75rem' }}>
-                <RouterLink to="/about" style={{ color: '#6B6B6B', textDecoration: 'none' }}>About</RouterLink>
-                <span>·</span>
-                <RouterLink to="/privacy" style={{ color: '#6B6B6B', textDecoration: 'none' }}>Privacy</RouterLink>
-                <span>·</span>
-                <RouterLink to="/terms" style={{ color: '#6B6B6B', textDecoration: 'none' }}>Terms</RouterLink>
-                <span>·</span>
-                <RouterLink to="/contact" style={{ color: '#6B6B6B', textDecoration: 'none' }}>Contact</RouterLink>
-                <span>·</span>
-                <RouterLink to="/categories" style={{ color: '#6B6B6B', textDecoration: 'none' }}>Sectors</RouterLink>
-              </Box>
-              <Typography variant="caption" sx={{ color: '#A8A8A8', mt: 1, display: 'block', fontSize: '0.7rem' }}>
-                © {new Date().getFullYear()} JobPulse Editorial India
-              </Typography>
-            </Box>
+              {/* List of popular exams */}
+              <Stack spacing={1}>
+                {popularExams.map((exam) => (
+                  <Box
+                    key={exam.title}
+                    component={RouterLink}
+                    to={`/jobs?q=${encodeURIComponent(exam.query)}`}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      textDecoration: 'none',
+                      py: 1,
+                      px: 1.25,
+                      borderRadius: '6px',
+                      color: '#334155',
+                      transition: 'all 0.15s ease',
+                      '&:hover': {
+                        bgcolor: '#F8FAFC',
+                        color: '#1D6EE5',
+                        '& .chevron': { color: '#1D6EE5' }
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                      <DocIcon sx={{ fontSize: 16, color: '#94A3B8' }} />
+                      <Typography sx={{ fontSize: '0.84rem', fontWeight: 600 }}>
+                        {exam.title}
+                      </Typography>
+                    </Box>
+                    <ChevronRightIcon className="chevron" sx={{ fontSize: 16, color: '#CBD5E1', transition: 'color 0.15s ease' }} />
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
           </Grid>
         </Grid>
       </Container>
